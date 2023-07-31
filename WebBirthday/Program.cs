@@ -1,4 +1,4 @@
-// начальные данные
+п»ї// РЅР°С‡Р°Р»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Identity.Client;
@@ -10,10 +10,10 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 var builder = WebApplication.CreateBuilder();
 
-// получаем строку подключения из файла конфигурации
+// РїРѕР»СѓС‡Р°РµРј СЃС‚СЂРѕРєСѓ РїРѕРґРєР»СЋС‡РµРЅРёСЏ РёР· С„Р°Р№Р»Р° РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 string connection = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// добавляем контекст ApplicationContext в качестве сервиса в приложение
+// РґРѕР±Р°РІР»СЏРµРј РєРѕРЅС‚РµРєСЃС‚ ApplicationContext РІ РєР°С‡РµСЃС‚РІРµ СЃРµСЂРІРёСЃР° РІ РїСЂРёР»РѕР¶РµРЅРёРµ
 builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
 
 var app = builder.Build();
@@ -25,25 +25,25 @@ app.MapGet("/api/users", async (ApplicationContext db) => await db.Users.OrderBy
 
 app.MapGet("/api/users/{id:int}", async (int id, ApplicationContext db) =>
 {
-    // получаем пользователя по id
+    // РїРѕР»СѓС‡Р°РµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїРѕ id
     User? user = await db.Users.FirstOrDefaultAsync(u => u.Id == id);
 
-    // если не найден, отправляем статусный код и сообщение об ошибке
-    if (user == null) return Results.NotFound(new { message = "Пользователь не найден" });
+    // РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅ, РѕС‚РїСЂР°РІР»СЏРµРј СЃС‚Р°С‚СѓСЃРЅС‹Р№ РєРѕРґ Рё СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
+    if (user == null) return Results.NotFound(new { message = "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ" });
     
-    // если пользователь найден, отправляем его
+    // РµСЃР»Рё РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅР°Р№РґРµРЅ, РѕС‚РїСЂР°РІР»СЏРµРј РµРіРѕ
     return Results.Json(user);
 });
 
 app.MapDelete("/api/users/{id:int}", async (int id, ApplicationContext db) =>
 {
-    // получаем пользователя по id
+    // РїРѕР»СѓС‡Р°РµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїРѕ id
     User? user = await db.Users.FirstOrDefaultAsync(u => u.Id == id);
 
-    // если не найден, отправляем статусный код и сообщение об ошибке
-    if (user == null) return Results.NotFound(new { message = "Пользователь не найден" });
+    // РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅ, РѕС‚РїСЂР°РІР»СЏРµРј СЃС‚Р°С‚СѓСЃРЅС‹Р№ РєРѕРґ Рё СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
+    if (user == null) return Results.NotFound(new { message = "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ" });
 
-    // если пользователь найден, удаляем его
+    // РµСЃР»Рё РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅР°Р№РґРµРЅ, СѓРґР°Р»СЏРµРј РµРіРѕ
     db.Users.Remove(user);
     await db.SaveChangesAsync();
     return Results.Json(user);
@@ -51,7 +51,7 @@ app.MapDelete("/api/users/{id:int}", async (int id, ApplicationContext db) =>
 
 app.MapPost("/api/users", async (User user, ApplicationContext db) =>
 {
-    // добавляем пользователя в массив
+    // РґРѕР±Р°РІР»СЏРµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РІ РјР°СЃСЃРёРІ
     await db.Users.AddAsync(user);
     await db.SaveChangesAsync();
     return user;
@@ -59,13 +59,13 @@ app.MapPost("/api/users", async (User user, ApplicationContext db) =>
 
 app.MapPut("/api/users", async (User userData, ApplicationContext db) =>
 {
-    // получаем пользователя по id
+    // РїРѕР»СѓС‡Р°РµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїРѕ id
     var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userData.Id);
 
-    // если не найден, отправляем статусный код и сообщение об ошибке
-    if (user == null) return Results.NotFound(new { message = "Пользователь не найден" });
+    // РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅ, РѕС‚РїСЂР°РІР»СЏРµРј СЃС‚Р°С‚СѓСЃРЅС‹Р№ РєРѕРґ Рё СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
+    if (user == null) return Results.NotFound(new { message = "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ" });
 
-    // если пользователь найден, изменяем его данные и отправляем обратно клиенту
+    // РµСЃР»Рё РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅР°Р№РґРµРЅ, РёР·РјРµРЅСЏРµРј РµРіРѕ РґР°РЅРЅС‹Рµ Рё РѕС‚РїСЂР°РІР»СЏРµРј РѕР±СЂР°С‚РЅРѕ РєР»РёРµРЅС‚Сѓ
     user.Name = userData.Name;
     user.Birthday = userData.Birthday;
     user.Type = userData.Type;
@@ -83,11 +83,11 @@ app.Run();
 public class User
 {
     public int Id { get; set; }
-    public string Name { get; set; } = ""; // имя пользователя
+    public string Name { get; set; } = ""; // РёРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
     [Column(TypeName = "date")]
-    public DateTime Birthday { get; set; } // День рождения пользователя
-    public bool Type { get; set; } // Важное?
-    public string? Photo { get; set; } // Фото пользователя // Convert.FromBase64String (string s);
+    public DateTime Birthday { get; set; } // Р”РµРЅСЊ СЂРѕР¶РґРµРЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+    public bool Type { get; set; } // Р’Р°Р¶РЅРѕРµ?
+    public string? Photo { get; set; } // Р¤РѕС‚Рѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ // Convert.FromBase64String (string s);
 
     //public decimal DayOfYear => Birthday.DayOfYear;
     [NotMapped]
@@ -114,14 +114,14 @@ public class ApplicationContext : DbContext
         : base(options)
     {
         //Database.EnsureDeleted();
-        Database.EnsureCreated();   // создаем базу данных при первом обращении
+        Database.EnsureCreated();   // СЃРѕР·РґР°РµРј Р±Р°Р·Сѓ РґР°РЅРЅС‹С… РїСЂРё РїРµСЂРІРѕРј РѕР±СЂР°С‰РµРЅРёРё
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>().HasData(
-                new User { Id = 1, Name = "Аня", Birthday = Convert.ToDateTime("2005-08-04"), Type=true },
-                new User { Id = 2, Name = "Светлана Ивановна", Birthday = Convert.ToDateTime("1974-12-31"), Type = false },
-                new User { Id = 3, Name = "дедушка", Birthday = Convert.ToDateTime("1937-01-15"), Type = true }
+                new User { Id = 1, Name = "РђРЅСЏ", Birthday = Convert.ToDateTime("2005-08-04"), Type=true },
+                new User { Id = 2, Name = "РЎРІРµС‚Р»Р°РЅР° РРІР°РЅРѕРІРЅР°", Birthday = Convert.ToDateTime("1974-12-31"), Type = false },
+                new User { Id = 3, Name = "РґРµРґСѓС€РєР°", Birthday = Convert.ToDateTime("1937-01-15"), Type = true }
         );
     }
 }
