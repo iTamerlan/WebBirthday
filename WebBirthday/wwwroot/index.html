@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>WebBirthday</title>
+    <style>
+        td {
+            padding: 5px;
+        }
+
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <p id="log2"></p>
+    <h2>Список пользователей</h2>
+    <div>
+        <input type="hidden" id="userId" />
+        <p>
+            Имя (ФИО):<br />
+            <input id="userName" />
+        </p>
+        <p>
+            День рождения:<br />
+            <input id="userBirthday" type="date" value="2000-01-01" />
+        </p>
+        <p>
+            Избранное:<br />
+            <input id="userType" type="checkbox" />
+        </p>
+        <p>
+            Фото:<br />
+            <input id="userPhoto" type="file" accept="image/jpeg" onchange="loadFile(event)" />
+            <img id="output" />
+        </p>
+        <p>
+            <button id="saveBtn">Сохранить</button>
+            <button id="resetBtn">Сбросить</button>
+        </p>
+    </div>
+    <table>
+        <thead><tr><th>Имя</th><th>День рождения</th><th>Избранное</th><th></th></tr></thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <script>
+        var loadFile = function (event) {
+            var output = document.getElementById('output');
+            output.src = URL.createObjectURL(event.target.files[0]);
+            output.onload = function () {
+                URL.revokeObjectURL(output.src) // free memory
+            }
+        };
+
+        function getBase64(file) {
+            var reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                console.log(reader.result);
+            };
+            reader.onerror = function (error) {
+                console.log('Error: ', error);
+            };
+            return reader.result;
+        }
+
+        // Получение всех пользователей
+        async function getUsers() {
+            // отправляет запрос и получаем ответ
+            const response = await fetch("/api/users", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            // если запрос прошел нормально
+            if (response.ok === true) {
+                // получаем данные
+                const users = await response.json();
+                const rows = document.querySelector("tbody");
+                // добавляем полученные элементы в таблицу
+                users.forEach(user => rows.append(row(user)));
+            }
+        }
+        // Получение одного пользователя
+        async function getUser(id) {
+            const response = await fetch(`/api/users/${id}`, {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const user = await response.json(); 
+                document.getElementById("userId").value = user.id;
+                document.getElementById("userName").value = user.name;
+                document.getElementById("userBirthday").value = user.birthday.slice(0, 10);
+                document.getElementById("userType").checked = user.type;
+            }
+            else {
+                // если произошла ошибка, получаем сообщение об ошибке
+                const error = await response.json();
+                console.log(error.message); // и выводим его на консоль
+            }
+        }
+        // Добавление пользователя
+        async function createUser(userName, userBirthday, userType) {
+
+            const response = await fetch("api/users", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: userName,
+                    birthday: userBirthday,
+                    type: userType
+                })
+            });
+            if (response.ok === true) {
+                const user = await response.json();
+                document.querySelector("tbody").append(row(user));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+        // Изменение пользователя
+        async function editUser(userId, userName, userBirthday, userType) {
+            const response = await fetch("api/users", {
+                method: "PUT",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: userId,
+                    name: userName,
+                    birthday: userBirthday,
+                    type: userType
+                })
+            });
+            if (response.ok === true) {
+                const user = await response.json();
+                document.querySelector(`tr[data-rowid='${user.id}']`).replaceWith(row(user));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+        // Удаление пользователя
+        async function deleteUser(id) {
+            const response = await fetch(`/api/users/${id}`, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const user = await response.json();
+                document.querySelector(`tr[data-rowid='${user.id}']`).remove();
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+
+        // сброс данных формы после отправки
+        function reset() {
+            document.getElementById("userId").value =
+                document.getElementById("userName").value = "";
+                document.getElementById("userBirthday").value = "2000-01-01";
+                document.getElementById("userType").checked = false;
+        }
+        // создание строки для таблицы
+        function row(user) {
+
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", user.id);
+
+            const nameTd = document.createElement("td");
+            nameTd.append(user.name);
+            tr.append(nameTd);
+
+
+            //myDate.getDate() + "/" + (myDate.getMonth() + 1) + "/"  + myDate.getYear();
+
+            const birthdayTd = document.createElement("td");
+            //birthdayTd.append(user.birthday.slice(0, 10));
+            dateBirthday = new Date(user.birthday.slice(0, 10));
+            birthdayTd.append(dateBirthday.toLocaleDateString());
+            tr.append(birthdayTd);
+
+            const typeTd = document.createElement("td");
+            var newCheckBox = document.createElement('input');
+            newCheckBox.type = 'checkbox';
+            newCheckBox.id = 'info' + user.id; // need unique Ids!
+            newCheckBox.checked = user.type;
+            newCheckBox.disabled = "disabled";
+            typeTd.append(newCheckBox);
+            tr.append(typeTd);
+
+            const linksTd = document.createElement("td");
+
+            const editLink = document.createElement("button");
+            editLink.append("Изменить");
+            editLink.addEventListener("click", async () => await getUser(user.id));
+            linksTd.append(editLink);
+
+            const removeLink = document.createElement("button");
+            removeLink.append("Удалить");
+            removeLink.addEventListener("click", async () => await deleteUser(user.id));
+
+            linksTd.append(removeLink);
+            tr.appendChild(linksTd);
+
+            return tr;
+        }
+        // сброс значений формы
+        document.getElementById("resetBtn").addEventListener("click", () => reset());
+
+        // отправка формы
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+
+            const id = document.getElementById("userId").value;
+            const name = document.getElementById("userName").value;
+            const birthday = new Date(document.getElementById("userBirthday").value).toJSON();
+            const type = document.getElementById("userType").checked;
+
+            const photo = getBase64(document.getElementById("userPhoto").files[0]);
+            document.getElementById("log2").innerHTML = photo;
+
+            if (id === "")
+                await createUser(name, birthday, type);
+            else
+                await editUser(id, name, birthday, type);
+            reset();
+        });
+        // brithday
+        // загрузка пользователей
+        getUsers();
+    </script>
+</body>
+</html>
