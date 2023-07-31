@@ -1,7 +1,9 @@
 // начальные данные
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Identity.Client;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
@@ -28,7 +30,7 @@ app.MapGet("/api/users/{id:int}", async (int id, ApplicationContext db) =>
 
     // если не найден, отправляем статусный код и сообщение об ошибке
     if (user == null) return Results.NotFound(new { message = "Пользователь не найден" });
-
+    
     // если пользователь найден, отправляем его
     return Results.Json(user);
 });
@@ -67,8 +69,8 @@ app.MapPut("/api/users", async (User userData, ApplicationContext db) =>
     user.Name = userData.Name;
     user.Birthday = userData.Birthday;
     user.Type = userData.Type;
-
-    // image ???
+    user.Photo = userData.Photo;
+    //user.Photo = Convert.FromBase64String(userData.Photo);
 
     await db.SaveChangesAsync();
     return Results.Json(user);
@@ -83,16 +85,18 @@ public class User
     [Column(TypeName = "date")]
     public DateTime Birthday { get; set; } // День рождения пользователя
     public bool Type { get; set; } // Важное?
-    public byte[]? image { get; set; } // Фото пользователя
+    public string? Photo { get; set; } // Фото пользователя // Convert.FromBase64String (string s);
 }
 
 public class ApplicationContext : DbContext
 {
     public DbSet<User> Users { get; set; } = null!;
+
+    //public string img = "";
     public ApplicationContext(DbContextOptions<ApplicationContext> options)
         : base(options)
     {
-        Database.EnsureDeleted();
+        //Database.EnsureDeleted();
         Database.EnsureCreated();   // создаем базу данных при первом обращении
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)

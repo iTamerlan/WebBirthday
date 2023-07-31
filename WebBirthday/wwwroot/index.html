@@ -32,8 +32,9 @@
         </p>
         <p>
             Фото:<br />
+            <img id="output" /><br />
             <input id="userPhoto" type="file" accept="image/jpeg" onchange="loadFile(event)" />
-            <img id="output" />
+
         </p>
         <p>
             <button id="saveBtn">Сохранить</button>
@@ -41,7 +42,7 @@
         </p>
     </div>
     <table>
-        <thead><tr><th>Имя</th><th>День рождения</th><th>Избранное</th><th></th></tr></thead>
+        <thead><tr><th>Фото</th><th>Имя</th><th>День рождения</th><th>Избранное</th><th></th></tr></thead>
         <tbody>
         </tbody>
     </table>
@@ -57,14 +58,16 @@
 
         function getBase64(file) {
             var reader = new FileReader();
+            var temp;
             reader.readAsDataURL(file);
             reader.onload = function () {
-                console.log(reader.result);
+                temp = reader.result;
             };
             reader.onerror = function (error) {
                 console.log('Error: ', error);
             };
-            return reader.result;
+            console.log(temp);
+            return temp;
         }
 
         // Получение всех пользователей
@@ -95,6 +98,7 @@
                 document.getElementById("userName").value = user.name;
                 document.getElementById("userBirthday").value = user.birthday.slice(0, 10);
                 document.getElementById("userType").checked = user.type;
+                document.getElementById("output").src = user.photo;
             }
             else {
                 // если произошла ошибка, получаем сообщение об ошибке
@@ -103,7 +107,7 @@
             }
         }
         // Добавление пользователя
-        async function createUser(userName, userBirthday, userType) {
+        async function createUser(userName, userBirthday, userType, userPhoto) {
 
             const response = await fetch("api/users", {
                 method: "POST",
@@ -111,7 +115,8 @@
                 body: JSON.stringify({
                     name: userName,
                     birthday: userBirthday,
-                    type: userType
+                    type: userType,
+                    photo: userPhoto,
                 })
             });
             if (response.ok === true) {
@@ -124,7 +129,7 @@
             }
         }
         // Изменение пользователя
-        async function editUser(userId, userName, userBirthday, userType) {
+        async function editUser(userId, userName, userBirthday, userType, userPhoto) {
             const response = await fetch("api/users", {
                 method: "PUT",
                 headers: { "Accept": "application/json", "Content-Type": "application/json" },
@@ -132,7 +137,8 @@
                     id: userId,
                     name: userName,
                     birthday: userBirthday,
-                    type: userType
+                    type: userType,
+                    photo: userPhoto,
                 })
             });
             if (response.ok === true) {
@@ -162,16 +168,32 @@
 
         // сброс данных формы после отправки
         function reset() {
-            document.getElementById("userId").value =
-                document.getElementById("userName").value = "";
-                document.getElementById("userBirthday").value = "2000-01-01";
-                document.getElementById("userType").checked = false;
+            location.reload();
+            //document.getElementById("userId").value =
+            //document.getElementById("userName").value = "";
+            //document.getElementById("userBirthday").value = "2000-01-01";
+            //document.getElementById("userType").checked = false;
+            //document.getElementById("userFile").files = '';
+            //var tempImg = document.getElementById("output");
+            //tempImg.src = "/x.jpg";
+            //tempImg.rendered();
+            //onchange="loadFile(event); elem.dispatchEvent(event)
         }
         // создание строки для таблицы
         function row(user) {
 
             const tr = document.createElement("tr");
             tr.setAttribute("data-rowid", user.id);
+
+            const imgTd = document.createElement("td");
+
+            var oImg = document.createElement("img");
+            oImg.setAttribute('src', user.photo);
+            oImg.setAttribute('alt', 'нет фото');
+            oImg.setAttribute('height', '64px');
+            oImg.setAttribute('width', '64px');
+            imgTd.append(oImg);
+            tr.append(imgTd);
 
             const nameTd = document.createElement("td");
             nameTd.append(user.name);
@@ -223,12 +245,12 @@
             const type = document.getElementById("userType").checked;
 
             const photo = getBase64(document.getElementById("userPhoto").files[0]);
-            document.getElementById("log2").innerHTML = photo;
+            //document.getElementById("log2").innerHTML = photo;
 
             if (id === "")
-                await createUser(name, birthday, type);
+                await createUser(name, birthday, type, photo);
             else
-                await editUser(id, name, birthday, type);
+                await editUser(id, name, birthday, type, photo);
             reset();
         });
         // brithday
