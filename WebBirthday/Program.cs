@@ -21,7 +21,7 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.MapGet("/api/users", async (ApplicationContext db) => await db.Users.ToListAsync());
+app.MapGet("/api/users", async (ApplicationContext db) => await db.Users.OrderBy(p => p.Birthday).ToListAsync()); //.Take(5).OrderBy(p => p.DayOfYear) OrderBy(p => p.Birthday)
 
 app.MapGet("/api/users/{id:int}", async (int id, ApplicationContext db) =>
 {
@@ -78,6 +78,8 @@ app.MapPut("/api/users", async (User userData, ApplicationContext db) =>
 
 app.Run();
 
+
+
 public class User
 {
     public int Id { get; set; }
@@ -86,6 +88,21 @@ public class User
     public DateTime Birthday { get; set; } // День рождения пользователя
     public bool Type { get; set; } // Важное?
     public string? Photo { get; set; } // Фото пользователя // Convert.FromBase64String (string s);
+
+    //public decimal DayOfYear => Birthday.DayOfYear;
+    [NotMapped]
+    public int? DayOfYear {
+        get
+        {
+            int temp = Birthday.DayOfYear;
+            int n = DateTime.Now.DayOfYear;
+            if (temp < n)
+            {
+                temp += 366;
+            }
+            return temp;
+        }
+    }
 }
 
 public class ApplicationContext : DbContext
